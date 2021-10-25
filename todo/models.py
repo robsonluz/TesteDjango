@@ -49,3 +49,13 @@ class Sala(models.Model):
   class Meta:
       verbose_name = "Sala"
       verbose_name_plural = "Salas"
+
+
+class Duvida(models.Model):
+  pergunta = models.TextField("Pergunta")
+  resposta = models.TextField("Resposta")
+  def __str__(self):
+      return str(self.pergunta)
+  class Meta:
+      verbose_name = "Dúvida frequente"
+      verbose_name_plural = "Dúvidas frequentes"
