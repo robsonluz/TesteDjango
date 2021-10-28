@@ -1,6 +1,6 @@
 
-from rest_framework import routers, serializers, viewsets
-from todo.models import Duvida, Filme, Ator
+from rest_framework import routers, serializers, viewsets, mixins
+from todo.models import Duvida, Filme, Ator, Usuario
 
 # Serializers define the API representation.
 class DuvidaSerializer(serializers.ModelSerializer):
@@ -32,7 +32,20 @@ class FilmeViewSet(viewsets.ModelViewSet):
     queryset = Filme.objects.all()
     serializer_class = FilmeSerializer        
 
+
+
+#Cadastro
+class CreateUsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ['id', 'nome', 'email', 'telefone', 'senha']
+
+class CreateUsuarioViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+  serializer_class = CreateUsuarioSerializer   
+  queryset = Usuario.objects.all()
+
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
 router.register(r'duvidas', DuvidaViewSet)
 router.register(r'filmes', FilmeViewSet)
+router.register(r'usuarios-create', CreateUsuarioViewSet)

@@ -59,3 +59,15 @@ class Duvida(models.Model):
   class Meta:
       verbose_name = "Dúvida frequente"
       verbose_name_plural = "Dúvidas frequentes"
+
+class Usuario(models.Model):
+  nome = models.CharField("Nome", max_length=255)
+  email = models.CharField("E-mail", max_length=100)
+  telefone = models.CharField("Telefone", max_length=100)
+  senha = models.CharField("Senha", max_length=100)
+  
+  def __str__(self):
+      return self.nome
+  class Meta:
+      verbose_name = "Usuário"
+      verbose_name_plural = "Usuários"      
