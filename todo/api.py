@@ -25,7 +25,7 @@ class FilmeSerializer(serializers.ModelSerializer):
     atores = AtorSerializer(many=True, read_only=True)
     class Meta:
         model = Filme
-        fields = ['id', 'titulo', 'sinopse', 'atores']
+        fields = ['id', 'titulo', 'sinopse', 'atores', 'fotoCapa']
 
 # ViewSets define the view behavior.
 class FilmeViewSet(viewsets.ReadOnlyModelViewSet):

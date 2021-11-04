@@ -22,7 +22,7 @@ class Filme(models.Model):
   sinopse = models.CharField("Sinopse", max_length=100)
   duracao = models.IntegerField("Duração")
   atores = models.ManyToManyField("Ator", verbose_name="Atores")
-  fotoCapa = models.ImageField(upload_to='filmes', max_length=100, null=True)
+  fotoCapa = models.ImageField(upload_to='filmes', max_length=255, null=True)
   
   def __str__(self):
       return self.titulo
