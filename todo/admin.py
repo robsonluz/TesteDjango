@@ -6,6 +6,7 @@ from .models import Sessao
 from .models import Sala
 from .models import Duvida
 from .models import Usuario
+from .models import Cidade
 
 admin.site.register(Ator)
 admin.site.register(Filme)
@@ -13,3 +14,4 @@ admin.site.register(Sessao)
 admin.site.register(Sala)
 admin.site.register(Duvida)
 admin.site.register(Usuario)
+admin.site.register(Cidade)

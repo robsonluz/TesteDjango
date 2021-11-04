@@ -60,11 +60,21 @@ class Duvida(models.Model):
       verbose_name = "Dúvida frequente"
       verbose_name_plural = "Dúvidas frequentes"
 
+class Cidade(models.Model):
+  nome = models.CharField("Nome", max_length=255)
+  
+  def __str__(self):
+      return self.nome
+  class Meta:
+      verbose_name = "Cidade"
+      verbose_name_plural = "Cidades"  
+
 class Usuario(models.Model):
   nome = models.CharField("Nome", max_length=255)
   email = models.CharField("E-mail", max_length=100)
   telefone = models.CharField("Telefone", max_length=100)
   senha = models.CharField("Senha", max_length=100)
+  cidade = models.ForeignKey('Cidade', on_delete=models.PROTECT, verbose_name="Cidade", null=True)
   
   def __str__(self):
       return self.nome

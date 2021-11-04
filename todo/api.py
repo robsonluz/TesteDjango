@@ -1,6 +1,6 @@
 
 from rest_framework import routers, serializers, viewsets, mixins
-from todo.models import Duvida, Filme, Ator, Usuario
+from todo.models import Duvida, Filme, Ator, Usuario, Cidade
 
 # Serializers define the API representation.
 class DuvidaSerializer(serializers.ModelSerializer):
@@ -33,12 +33,24 @@ class FilmeViewSet(viewsets.ModelViewSet):
     serializer_class = FilmeSerializer        
 
 
+# Serializers define the API representation.
+class CidadeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cidade
+        fields = ['id', 'nome']
+
+# ViewSets define the view behavior.
+class CidadeViewSet(viewsets.ModelViewSet):
+    queryset = Cidade.objects.all().order_by('nome')
+    serializer_class = CidadeSerializer  
+
 
 #Cadastro
 class CreateUsuarioSerializer(serializers.ModelSerializer):
+    cidade: CidadeSerializer()
     class Meta:
         model = Usuario
-        fields = ['id', 'nome', 'email', 'telefone', 'senha']
+        fields = ['id', 'nome', 'email', 'telefone', 'senha', 'cidade']
 
 class CreateUsuarioViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
   serializer_class = CreateUsuarioSerializer   
@@ -48,4 +60,5 @@ class CreateUsuarioViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 router = routers.DefaultRouter()
 router.register(r'duvidas', DuvidaViewSet)
 router.register(r'filmes', FilmeViewSet)
+router.register(r'cidades', CidadeViewSet)
 router.register(r'usuarios-create', CreateUsuarioViewSet)
