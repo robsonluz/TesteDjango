@@ -28,7 +28,7 @@ class FilmeSerializer(serializers.ModelSerializer):
         fields = ['id', 'titulo', 'sinopse', 'atores']
 
 # ViewSets define the view behavior.
-class FilmeViewSet(viewsets.ModelViewSet):
+class FilmeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Filme.objects.all()
     serializer_class = FilmeSerializer        
 
@@ -40,7 +40,7 @@ class CidadeSerializer(serializers.ModelSerializer):
         fields = ['id', 'nome']
 
 # ViewSets define the view behavior.
-class CidadeViewSet(viewsets.ModelViewSet):
+class CidadeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Cidade.objects.all().order_by('nome')
     serializer_class = CidadeSerializer  
 
