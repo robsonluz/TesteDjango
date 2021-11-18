@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class TodoItem(models.Model):
   content = models.TextField()
@@ -73,7 +74,7 @@ class Cidade(models.Model):
 class Usuario(models.Model):
   nome = models.CharField("Nome", max_length=255)
   email = models.CharField("E-mail", max_length=100)
-  telefone = models.CharField("Telefone", max_length=100)
+  telefone = models.CharField("Telefone", max_length=100, null=True)
   senha = models.CharField("Senha", max_length=100)
   cidade = models.ForeignKey('Cidade', on_delete=models.PROTECT, verbose_name="Cidade", null=True)
   
