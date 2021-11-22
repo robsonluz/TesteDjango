@@ -1,5 +1,8 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+from functools import reduce
 
+User = get_user_model()
 
 # Create your models here.
 class TodoItem(models.Model):
@@ -24,6 +27,7 @@ class Filme(models.Model):
   duracao = models.IntegerField("Duração")
   atores = models.ManyToManyField("Ator", verbose_name="Atores")
   fotoCapa = models.ImageField(upload_to='filmes', max_length=255, null=True)
+  valor = models.DecimalField(max_digits=5, decimal_places=2, null=True)
   
   def __str__(self):
       return self.titulo
@@ -75,11 +79,36 @@ class Usuario(models.Model):
   nome = models.CharField("Nome", max_length=255)
   email = models.CharField("E-mail", max_length=100)
   telefone = models.CharField("Telefone", max_length=100, null=True)
-  senha = models.CharField("Senha", max_length=100)
   cidade = models.ForeignKey('Cidade', on_delete=models.PROTECT, verbose_name="Cidade", null=True)
-  
+  user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name="Usuário logado", null=True)
+
   def __str__(self):
       return self.nome
   class Meta:
       verbose_name = "Usuário"
-      verbose_name_plural = "Usuários"      
+      verbose_name_plural = "Usuários"    
+
+class Pedido(models.Model):
+  usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, verbose_name="Usuário", null=True)
+  finalizado = models.BooleanField()
+
+  @property
+  def itens(self):
+    return Item.objects.filter(pedido=self)
+
+  @property
+  def valorTotal(self):
+    #busca os itens deste pedido
+    itens = list(Item.objects.filter(pedido=self))
+    #soma os valores dos itens no pedido
+    return reduce(lambda x, y: x + y, list(map(lambda item: item.valor, itens)))
+
+class Item(models.Model):
+  pedido = models.ForeignKey(Pedido, on_delete=models.PROTECT, verbose_name="Pedido", null=True)
+  filme = models.ForeignKey(Filme, on_delete=models.PROTECT, verbose_name="Filme", null=True)
+
+  @property
+  def valor(self):
+    return self.filme.valor
+
+

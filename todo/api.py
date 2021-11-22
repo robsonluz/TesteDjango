@@ -9,9 +9,11 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 
+
+
 #from django.contrib.auth import authenticate, user_logged_in
 from django.contrib.auth import authenticate, login, logout
-from todo.models import Duvida, Filme, Ator, Usuario, Cidade
+from todo.models import Duvida, Filme, Ator, Usuario, Cidade, Pedido, Item
 
 # Serializers define the API representation.
 class DuvidaSerializer(serializers.ModelSerializer):
@@ -36,7 +38,7 @@ class FilmeSerializer(serializers.ModelSerializer):
     atores = AtorSerializer(many=True, read_only=True)
     class Meta:
         model = Filme
-        fields = ['id', 'titulo', 'sinopse', 'atores', 'fotoCapa']
+        fields = ['id', 'titulo', 'sinopse', 'atores', 'fotoCapa', 'valor']
 
 # ViewSets define the view behavior.
 class FilmeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -56,16 +58,61 @@ class CidadeViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CidadeSerializer  
 
 
+#### Pedidos, Carrinho de compras ###########
+class ItemSerializer(serializers.ModelSerializer):
+    filme: FilmeSerializer()
+    class Meta:
+        model = Item
+        depth = 2
+        fields = ['id', 'valor', 'filme']
+
+class PedidoSerializer(serializers.ModelSerializer):
+    itens = ItemSerializer(many=True)
+    class Meta:
+        model = Pedido
+        depth = 2
+        fields = ['id', 'finalizado', 'valorTotal', 'itens']
+
+class PedidoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = PedidoSerializer      
+    def get_queryset(self):
+      #filtra apenas os pedidos do usuário logado
+      return Pedido.objects.filter(usuario = Usuario.objects.filter(user = self.request.user)[0])    
+
+class CreateItemSerializer(serializers.ModelSerializer):
+    filme: FilmeSerializer()
+    class Meta:
+        model = Item
+        fields = ['id', 'filme', 'pedido']
+
+class CreateItemPedidoViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+  serializer_class = CreateItemSerializer   
+  queryset = Item.objects.all()
+
+  def perform_create(self, serializer):
+    #procura o pedido aberto
+    pedidosAbertos = Pedido.objects.filter(finalizado = False, usuario = Usuario.objects.filter(user = self.request.user)[0])    
+    if(len(pedidosAbertos) > 0):
+      pedidoAberto = pedidosAbertos[0]
+    else:
+      #caso nao exista um pedido aberto ele cria um
+      pedidoAberto = Pedido.objects.create(usuario = Usuario.objects.filter(user = self.request.user)[0], finalizado = False)
+    serializer.save(pedido = pedidoAberto) 
+#################   
+
 #Cadastro
 class CreateUsuarioSerializer(serializers.ModelSerializer):
     cidade: CidadeSerializer()
     class Meta:
         model = Usuario
-        fields = ['id', 'nome', 'email', 'telefone', 'senha', 'cidade']
+        fields = ['id', 'nome', 'email', 'telefone', 'cidade', 'user']
 
 class CreateUsuarioViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
   serializer_class = CreateUsuarioSerializer   
   queryset = Usuario.objects.all()
+
+  def perform_create(self, serializer):
+    serializer.save(user = self.request.user)    
 
 
 
@@ -99,7 +146,7 @@ class LoginViewSet(ViewSet):
 
       if user is not None:
         login(request, user)
-        return JsonResponse({"detail": "Success"})
+        return JsonResponse({"id": user.id, "username": user.username})
       else:
         return JsonResponse(
             {"detail": "Invalid credentials"},
@@ -107,9 +154,9 @@ class LoginViewSet(ViewSet):
         )
 
 class UserDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'username')
+  class Meta:
+      model = get_user_model()
+      fields = ('id', 'username')
 
 class UserDetailsViewSet(ViewSet):
   serializer_class = UserDetailsSerializer
@@ -139,7 +186,9 @@ router = routers.DefaultRouter()
 router.register(r'duvidas', DuvidaViewSet)
 router.register(r'filmes', FilmeViewSet)
 router.register(r'cidades', CidadeViewSet)
+router.register(r'pedidos', PedidoViewSet, basename='Pedidos')
 router.register(r'usuarios-create', CreateUsuarioViewSet)
+router.register(r'item-pedido-create', CreateItemPedidoViewSet)
 router.register(r'currentuser', UserDetailsViewSet, basename="Currentuser")
 router.register(r'login', LoginViewSet, basename="Login")
 router.register(r'logout', LogoutViewSet, basename="Logout")
