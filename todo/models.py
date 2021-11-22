@@ -101,7 +101,7 @@ class Pedido(models.Model):
     #busca os itens deste pedido
     itens = list(Item.objects.filter(pedido=self))
     #soma os valores dos itens no pedido
-    return reduce(lambda x, y: x + y, list(map(lambda item: item.valor, itens)))
+    return reduce(lambda x, y: x + y, list(map(lambda item: item.valor, itens)), 0)
 
 class Item(models.Model):
   pedido = models.ForeignKey(Pedido, on_delete=models.PROTECT, verbose_name="Pedido", null=True)
