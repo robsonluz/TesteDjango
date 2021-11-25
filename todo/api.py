@@ -153,6 +153,22 @@ class LoginViewSet(ViewSet):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
+# Serializers define the API representation.
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ['id', 'nome', 'email', 'telefone', 'cidade', 'user']
+
+class UsuarioDetailsViewSet(ViewSet):
+  serializer_class = UsuarioSerializer
+  permission_classes = [IsAuthenticated]
+  @staticmethod
+  def list(request: Request) -> Response:
+    usuario = Usuario.objects.filter(user = request.user)[0]
+    serializer = UsuarioSerializer(usuario, many=False)
+    return Response(serializer.data)
+
+
 class UserDetailsSerializer(serializers.ModelSerializer):
   class Meta:
       model = get_user_model()
@@ -163,11 +179,7 @@ class UserDetailsViewSet(ViewSet):
   permission_classes = [IsAuthenticated]
   @staticmethod
   def list(request: Request) -> Response:
-    content = {'not_done': 1}
-    print(request.user)
-    print(content)
     serializer = UserDetailsSerializer(request.user, many=False)
-    #return 
     return Response(serializer.data)
 
 
@@ -190,6 +202,16 @@ router.register(r'pedidos', PedidoViewSet, basename='Pedidos')
 router.register(r'usuarios-create', CreateUsuarioViewSet)
 router.register(r'item-pedido-create', CreateItemPedidoViewSet)
 router.register(r'currentuser', UserDetailsViewSet, basename="Currentuser")
+router.register(r'currentusuario', UsuarioDetailsViewSet, basename="Currentusuario")
+
 router.register(r'login', LoginViewSet, basename="Login")
 router.register(r'logout', LogoutViewSet, basename="Logout")
 router.register(r'user-registration', UserRegistrationViewSet, basename="User")
+
+
+
+#orbit (cadastro)
+#move ()
+#market everywhere
+#uochi
+#doei

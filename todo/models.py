@@ -100,6 +100,7 @@ class Pedido(models.Model):
   def valorTotal(self):
     #busca os itens deste pedido
     itens = list(Item.objects.filter(pedido=self))
+
     #soma os valores dos itens no pedido
     return reduce(lambda x, y: x + y, list(map(lambda item: item.valor, itens)), 0)
 
