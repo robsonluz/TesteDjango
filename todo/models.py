@@ -23,8 +23,9 @@ class Ator(models.Model):
 
 class Filme(models.Model):
   titulo = models.CharField("Título", max_length=100)
+  descricao = models.CharField("Descricao", max_length=100, null=True)
   sinopse = models.CharField("Sinopse", max_length=100)
-  duracao = models.IntegerField("Duração")
+  duracao = models.IntegerField("Duração", null=True)
   atores = models.ManyToManyField("Ator", verbose_name="Atores")
   fotoCapa = models.ImageField(upload_to='filmes', max_length=255, null=True)
   valor = models.DecimalField(max_digits=5, decimal_places=2, null=True)
@@ -90,6 +91,7 @@ class Usuario(models.Model):
 
 class Pedido(models.Model):
   usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, verbose_name="Usuário", null=True)
+  urlPagamento = models.CharField("URL Pagamento", max_length=255, null=True)
   finalizado = models.BooleanField()
 
   @property

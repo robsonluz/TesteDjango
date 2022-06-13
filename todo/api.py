@@ -10,6 +10,15 @@ from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 
 
+import os
+
+# SDK do Mercado Pago
+import mercadopago
+# Adicione as credenciais
+sdk = mercadopago.SDK(os.environ['mercadopagotoken'])
+
+
+
 
 #from django.contrib.auth import authenticate, user_logged_in
 from django.contrib.auth import authenticate, login, logout
@@ -43,7 +52,18 @@ class FilmeSerializer(serializers.ModelSerializer):
 # ViewSets define the view behavior.
 class FilmeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Filme.objects.all()
-    serializer_class = FilmeSerializer        
+    serializer_class = FilmeSerializer    
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases for
+        the user as determined by the username portion of the URL.
+        """
+        queryset = Filme.objects.all()
+        titulo = self.request.query_params.get('titulo', None)
+        if titulo is not None:
+            queryset = queryset.filter(titulo=titulo)
+        return queryset
 
 
 # Serializers define the API representation.
@@ -71,7 +91,7 @@ class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pedido
         depth = 2
-        fields = ['id', 'finalizado', 'valorTotal', 'itens']
+        fields = ['id', 'finalizado', 'valorTotal', 'itens', 'urlPagamento']
 
 class PedidoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PedidoSerializer      
@@ -98,6 +118,44 @@ class CreateItemPedidoViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
       #caso nao exista um pedido aberto ele cria um
       pedidoAberto = Pedido.objects.create(usuario = Usuario.objects.filter(user = self.request.user)[0], finalizado = False)
     serializer.save(pedido = pedidoAberto) 
+
+
+
+class FinalizarPedidoViewSet(ViewSet):
+  @staticmethod
+  def create(request: Request) -> Response:
+      print("chegou aqui no finalizar")
+      id = request.data.get('id')
+      print(id)
+      pedidos = Pedido.objects.filter(id = id)
+      if(len(pedidos) > 0):
+        pedido = pedidos[0]
+
+        items = []
+        for item in pedido.itens:
+          items.append({
+            "title": item.filme.titulo,
+            "quantity": 1,
+            "unit_price": float(item.valor)
+          })
+          
+        # Cria um item na preferência
+        preference_data = {
+          "items": items
+        }
+
+        print(preference_data)
+    
+        preference_response = sdk.preference().create(preference_data)
+        preference = preference_response["response"]
+        print(preference)
+        print(preference['sandbox_init_point'])
+        pedido.urlPagamento = str(preference['sandbox_init_point'])
+        pedido.finalizado = True
+        Pedido.save(pedido)   
+        return JsonResponse({"id": pedido.id, "urlPagamento": pedido.urlPagamento})
+      return JsonResponse({})
+  
 #################   
 
 #Cadastro
@@ -201,6 +259,7 @@ router.register(r'cidades', CidadeViewSet)
 router.register(r'pedidos', PedidoViewSet, basename='Pedidos')
 router.register(r'usuarios-create', CreateUsuarioViewSet)
 router.register(r'item-pedido-create', CreateItemPedidoViewSet)
+router.register(r'pedido-finalizar', FinalizarPedidoViewSet, basename='PedidoFinalizar')
 router.register(r'currentuser', UserDetailsViewSet, basename="Currentuser")
 router.register(r'currentusuario', UsuarioDetailsViewSet, basename="Currentusuario")
 
