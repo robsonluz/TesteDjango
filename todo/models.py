@@ -93,6 +93,7 @@ class Pedido(models.Model):
   usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, verbose_name="Usuário", null=True)
   urlPagamento = models.CharField("URL Pagamento", max_length=255, null=True)
   finalizado = models.BooleanField()
+  pago = models.BooleanField(default=False)
 
   @property
   def itens(self):

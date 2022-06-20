@@ -91,7 +91,7 @@ class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pedido
         depth = 2
-        fields = ['id', 'finalizado', 'valorTotal', 'itens', 'urlPagamento']
+        fields = ['id', 'finalizado', 'valorTotal', 'itens', 'urlPagamento','pago']
 
 class PedidoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PedidoSerializer      
@@ -138,12 +138,14 @@ class FinalizarPedidoViewSet(ViewSet):
             "quantity": 1,
             "unit_price": float(item.valor)
           })
-          
+
+        url="https://testedjango.robsonjoo.repl.co/api/pagamento/?pedido=" + str(request.data.get('id'))
+
         # Cria um item na preferência
         preference_data = {
           "items": items,
           "external_reference": str(id),
-          "notification_url": "https://testedjango.robsonjoo.repl.co/api/pagamento/",
+          "notification_url": url,
           #"back_urls": {
           #    "success": "https://vue-examples.robsonjoo.repl.co/#/meus-pedidos",
           #    "failure": "https://vue-examples.robsonjoo.repl.co/#/meus-pedidos",
@@ -169,9 +171,15 @@ class PagamentoViewSet(ViewSet):
   @staticmethod
   def create(request: Request) -> Response:
       print("chegou aqui no pagamento")
-      data = request.data
-      print(data)
 
+      pedidoId = request.query_params.get('pedido', None)
+      if pedidoId is not None:
+        pedidos = Pedido.objects.filter(id = pedidoId)
+        if(len(pedidos) > 0):
+          pedido = pedidos[0]
+          pedido.pago = True
+          Pedido.save(pedido)
+          
       return JsonResponse({})    
     
 #################   
