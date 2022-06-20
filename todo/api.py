@@ -141,7 +141,14 @@ class FinalizarPedidoViewSet(ViewSet):
           
         # Cria um item na preferência
         preference_data = {
-          "items": items
+          "items": items,
+          "external_reference": str(id),
+          "notification_url": "https://testedjango.robsonjoo.repl.co/api/pagamento/",
+          #"back_urls": {
+          #    "success": "https://vue-examples.robsonjoo.repl.co/#/meus-pedidos",
+          #    "failure": "https://vue-examples.robsonjoo.repl.co/#/meus-pedidos",
+          #    "pending": "https://vue-examples.robsonjoo.repl.co/#/meus-pedidos"
+          #}
         }
 
         print(preference_data)
@@ -155,7 +162,18 @@ class FinalizarPedidoViewSet(ViewSet):
         Pedido.save(pedido)   
         return JsonResponse({"id": pedido.id, "urlPagamento": pedido.urlPagamento})
       return JsonResponse({})
-  
+
+
+
+class PagamentoViewSet(ViewSet):
+  @staticmethod
+  def create(request: Request) -> Response:
+      print("chegou aqui no pagamento")
+      data = request.data
+      print(data)
+
+      return JsonResponse({})    
+    
 #################   
 
 #Cadastro
@@ -260,6 +278,7 @@ router.register(r'pedidos', PedidoViewSet, basename='Pedidos')
 router.register(r'usuarios-create', CreateUsuarioViewSet)
 router.register(r'item-pedido-create', CreateItemPedidoViewSet)
 router.register(r'pedido-finalizar', FinalizarPedidoViewSet, basename='PedidoFinalizar')
+router.register(r'pagamento', PagamentoViewSet, basename='Pagamento')
 router.register(r'currentuser', UserDetailsViewSet, basename="Currentuser")
 router.register(r'currentusuario', UsuarioDetailsViewSet, basename="Currentusuario")
 
